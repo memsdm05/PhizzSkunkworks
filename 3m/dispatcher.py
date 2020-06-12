@@ -4,6 +4,9 @@ import tornado.ioloop
 import tornado.websocket as ws
 import tornado.web as http
 import logging
+import asyncio
+import platform
+import socket
 import sys
 
 logging.basicConfig(format='[%(asctime)-15s] %(message)s', level=logging.INFO)
@@ -40,19 +43,27 @@ class Dispatcher(ws.WebSocketHandler):
         del clients[self.name]
         logging.info(f'user {self.name} disconnected')
 
+IP   = '192.168.1.149'
+PORT = 4000
+
 def main():
+    if platform.system() == 'Windows':
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     redirect_url = {"url": "https://example.com"}
+    handlers = [(r'/', Dispatcher), (r'/health', HealthCheck), (r'/redirect', http.RedirectHandler, redirect_url)]
+    # handlers = [(r'/', Dispatcher)]
 
     # create a tornado application and provide the urls
-    app = tornado.web.Application([(r'/', Dispatcher),
-                                   (r'/health', HealthCheck),
-                                   (r'/redirect', http.RedirectHandler, redirect_url)])
+
+    app = tornado.web.Application(handlers)
 
     # setup the server
     server = tornado.httpserver.HTTPServer(app)
-    server.listen(int(sys.argv[1]))
+
+    print(f'Hosting server on {IP}:{str(PORT)}')
+    server.listen(PORT, IP)
     # start io/event loop
-    tornado.ioloop.IOLoop.instance().start()
+    tornado.ioloop.IOLoop.current().start()
 
 if __name__ == '__main__':
     main()
