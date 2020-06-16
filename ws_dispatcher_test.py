@@ -10,7 +10,6 @@ import tornado.websocket as ws
 from tornado.options import define, options
 import time
 import sys
-import ipy_autoreload
 
 class WebSocketHandler(ws.WebSocketHandler):
     '''

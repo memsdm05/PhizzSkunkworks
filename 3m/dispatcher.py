@@ -6,10 +6,9 @@ import tornado.web as http
 import logging
 import asyncio
 import platform
-import socket
 import sys
 
-logging.basicConfig(format='[%(asctime)-15s] %(message)s', level=logging.INFO)
+logging.basicConfig(format='[%(asctime)-15s] %(message)s', level=logging.INFO, stream=sys.stdout)
 
 clients = {}
 
@@ -43,7 +42,8 @@ class Dispatcher(ws.WebSocketHandler):
         del clients[self.name]
         logging.info(f'user {self.name} disconnected')
 
-IP   = '192.168.1.149'
+# IP   = '192.168.1.149'
+IP   = 'localhost'
 PORT = 4000
 
 def main():
