@@ -1,10 +1,17 @@
+'''
+Cannot run on windows
+'''
+
+import sys
+from twisted.python import log
+from twisted.internet import reactor
+
 import asyncio
 import logging
-import sys
 import platform
-from autobahn.asyncio.websocket import WebSocketServerProtocol, WebSocketServerFactory
+from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory
 
-logging.basicConfig(format='[%(asctime)-15s][AUTO+A] %(message)s', level=logging.INFO, stream=sys.stdout)
+logging.basicConfig(format='[%(asctime)-15s][AUTO+T] %(message)s', level=logging.INFO, stream=sys.stdout)
 
 IP = "localhost"
 PORT = 4000
@@ -32,19 +39,14 @@ if __name__ == '__main__':
     if platform.system() == 'Windows':
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-    logging.info(f'Hosting Autobahn + Asyncio server on {IP}:{str(PORT)}')
+    logging.info(f'Hosting Autobahn + Twisted server on {IP}:{str(PORT)}')
+    log.startLogging(sys.stdout)
 
     factory = WebSocketServerFactory(f"ws://{IP}:{PORT}")
     factory.protocol = EchoWSHandler
+    # factory.setProtocolOptions(maxConnections=2)
 
-    loop = asyncio.get_event_loop()
-    coro = loop.create_server(factory, IP, PORT)
-    server = loop.run_until_complete(coro)
+    # note to self: if using putChild, the child must be bytes...
 
-    try:
-        loop.run_forever()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        server.close()
-        loop.close()
+    reactor.listenTCP(IP, factory)
+    reactor.run()
