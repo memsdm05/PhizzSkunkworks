@@ -3,8 +3,8 @@ Cannot run on windows
 '''
 
 import sys
-from twisted.python import log
 from twisted.internet import reactor
+
 
 import asyncio
 import logging
@@ -40,13 +40,12 @@ if __name__ == '__main__':
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     logging.info(f'Hosting Autobahn + Twisted server on {IP}:{str(PORT)}')
-    log.startLogging(sys.stdout)
 
-    factory = WebSocketServerFactory(f"ws://{IP}:{PORT}")
+    factory = WebSocketServerFactory()
     factory.protocol = EchoWSHandler
     # factory.setProtocolOptions(maxConnections=2)
 
     # note to self: if using putChild, the child must be bytes...
 
-    reactor.listenTCP(IP, factory)
+    reactor.listenTCP(PORT, factory)
     reactor.run()

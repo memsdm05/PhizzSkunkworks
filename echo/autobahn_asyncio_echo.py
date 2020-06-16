@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     logging.info(f'Hosting Autobahn + Asyncio server on {IP}:{str(PORT)}')
 
-    factory = WebSocketServerFactory(f"ws://{IP}:{PORT}")
+    factory = WebSocketServerFactory()
     factory.protocol = EchoWSHandler
 
     loop = asyncio.get_event_loop()
