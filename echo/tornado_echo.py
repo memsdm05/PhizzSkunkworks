@@ -14,19 +14,19 @@ IP = "localhost"
 PORT = 4000
 
 class EchoWSHandler(tornado.websocket.WebSocketHandler):
-    ticker = 0
+    clients = set()
 
     def open(self):
-        self.ticker += 1
-        logging.info(f'[{self.ticker}] New Client')
+        self.clients.add(self)
+        logging.info(f'[{len(self.clients)}] New Client')
 
     def on_message(self, message):
         self.write_message(message)
-        logging.info(f'[{self.ticker}] Echoed: {message}')
+        logging.info(f'[{len(self.clients)}] Echoed: {message}')
 
     def on_close(self):
-        self.ticker -= 1
-        logging.info(f'[{self.ticker}] Client Left')
+        self.clients.remove(self)
+        logging.info(f'[{len(self.clients)}] Client Left')
 
 
 if __name__ == '__main__':

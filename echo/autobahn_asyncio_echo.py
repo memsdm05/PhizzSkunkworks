@@ -10,22 +10,22 @@ IP = "localhost"
 PORT = 4000
 
 class EchoWSHandler(WebSocketServerProtocol):
-    ticker = 0
+    clients = set()
 
     def onConnect(self, request):
-        logging.info(f'[{self.ticker}] New Connection')
+        logging.info(f'[{len(self.clients)}] New Connection')
 
     def onOpen(self):
-        self.ticker += 1
-        logging.info(f'[{self.ticker}] New Client')
+        self.clients.add(self)
+        logging.info(f'[{len(self.clients)}] New Client')
 
     def onMessage(self, payload, isBinary):
         self.sendMessage(payload, isBinary)
-        logging.info(f'[{self.ticker}] Echoed: {payload.decode("utf8")}')
+        logging.info(f'[{len(self.clients)}] Echoed: {payload.decode("utf8")}')
 
     def onClose(self, wasClean, code, reason):
-        self.ticker -= 1
-        logging.info(f'[{self.ticker}] Client Left')
+        self.clients.remove(self)
+        logging.info(f'[{len(self.clients)}] Client Left')
 
 
 if __name__ == '__main__':
