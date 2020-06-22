@@ -1,5 +1,5 @@
 '''
-Cannot run on windows
+Cannot run on windows, also bad
 '''
 
 import sys
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     factory = WebSocketServerFactory()
     factory.protocol = EchoWSHandler
-    # factory.setProtocolOptions(maxConnections=2)
+    factory.setProtocolOptions(maxConnections=9999999)
 
     # note to self: if using putChild, the child must be bytes...
 
