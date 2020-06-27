@@ -67,10 +67,8 @@ if __name__ == '__main__':
                         help='How many connections to the ws server (default: 1)')
     parser.add_argument('--wsuri', '-w', dest='uri', type=str, default='',
                         help='The uri of the ws connection. Overwrites PORT and IP')
-    parser.add_argument('--intial_message', '-i', dest='inital', type=str, default='',
-                        help='A message to send on connection openning')
     parser.add_argument('--delay', '-d', dest='delay', type=float, default=0,
-                        help='Artifical delay')
+                        help='Artificial delay')
     parser.add_argument('--echo_back', '-e', dest='echo', type=str, default='',
                         help='The message to send back instead of an echo')
     parser.add_argument('--run_once', '-o', dest='once', action='store_true', default=False,
