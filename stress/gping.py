@@ -1,6 +1,7 @@
 import asyncio
 import argparse
 import time
+import platform
 from autobahn.asyncio.websocket import WebSocketClientProtocol, WebSocketClientFactory
 import random as r
 
@@ -43,21 +44,19 @@ class GarbagePingerProtocol(WebSocketClientProtocol):
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))
 
-
-if __name__ == '__main__':
+def getArgs(args=None):
     parser = argparse.ArgumentParser(description='A websocket mass pinger for testing purposes')
 
     parser.add_argument('--port', '-P', dest='port', type=int, default=4000,
                         help='The port to connect to (default: 4000)')
-    parser.add_argument('--ip', '-I', dest='ip', type=str, default='localhost',
-                        help='The uri to connect to (default: localhost)')
-    parser.add_argument('--wsuri', '-w', dest='uri', type=str, default='',
-                        help='The uri of the ws connection. Overwrites PORT and IP')
+    parser.add_argument('--uri', '-U', dest='uri', type=str, default='localhost',
+                        help='The uri or ip to connect to (default: localhost)')
+    parser.add_argument('--secure', '-s', dest='isSecure', action='store_true', default=False,
+                        help='Uses WSS instead of WS')
     parser.add_argument('--connections', '-c', dest='conns', type=int, default=1,
                         help='How many connections to the ws server (default: 1)')
     parser.add_argument('--threads', '-t', dest='threads', type=int, default=0,
                         help='How many threads to run the connections in, 0 for no threads (default: 0')
-
 
     parser.add_argument('--highest-delay', '-D', dest='high', type=int, default=3)
     parser.add_argument('--lowest-delay', '-d', dest='low', type=int, default=0)
@@ -84,14 +83,24 @@ if __name__ == '__main__':
     parser.add_argument('--output' '-o', dest='output', type=str, default='',
                         help='Outputs data to a specified text files')
 
-    args = parser.parse_args()
+    if args == None:
+        return parser.parse_args()
+    else:
+        return parser.parse_args(args)
 
+if __name__ == '__main__':
+    if platform.system() == 'Windows':
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+    args = getArgs()
 
     factory = WebSocketClientFactory()
     factory.protocol = GarbagePingerProtocol
 
+    uri = 'wss' if args.isSecure else 'ws' + '://' + args.uri
+
     loop = asyncio.get_event_loop()
-    for _ in range():
-        loop.run_until_complete(loop.create_connection(factory, '127.0.0.1', 4000))
+    for _ in range(args.conns):
+        loop.run_until_complete(loop.create_connection(factory, 'wss://echo.websocket.org', 8080, ssl=True))
     loop.run_forever()
     loop.close()

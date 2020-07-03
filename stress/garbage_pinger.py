@@ -49,8 +49,9 @@ async def handler(uri):
             await asyncio.sleep(r.random()*3)
 
 uri = sys.argv[1]
-loop = asyncio.get_event_loop()
 
+
+loop = asyncio.get_event_loop()
 try:
     for i in range(int(sys.argv[2])):
         loop.create_task(handler(uri))
