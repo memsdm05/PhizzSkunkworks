@@ -45,8 +45,8 @@ class AllocTree:
                 s = nstart + n * div # start is a multiplication of div + the start
                 e = s + div - 1      # end is just start + div - 1 (- 1 is because it's inclusive, inclusive)
                 self.children.append(AllocTree(chain[1:], s, e, self))
-        # If node is a leaf (bots, apps, healths, etc)
-        elif self.leaf:
+        # If next node is a leaf (bots, apps, healths, etc)
+        elif len(chain) == 1:
             op = chain[0]
 
             # If leaf no need to calculate segment size, just fill to the op
