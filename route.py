@@ -7,19 +7,20 @@ Rules of Routing
 For this example:
 Congruent
 Modulo allocs are thrown away
-
 '''
 
 import random as r
+
+
 class AllocTree:
     SIZE = 10_000
 
-    def __init__(self, chain, start:int=None, end:int=None, parent:'AllocTree'=None, isLeaf:bool=False,):
+    def __init__(self, chain, start: int = None, end: int = None, parent: 'AllocTree' = None):
         # Node attributes
         self.root = parent is None
+        self.leaf = len(chain) == 0
         self.children = []
         self.parent = parent
-        self.isLeaf = isLeaf
 
         # Range start and end (Inclusive, Inclusive)
         self.start = start
@@ -28,45 +29,71 @@ class AllocTree:
         if self.root:
             self.start = 0
             self.end = self.SIZE
-            sp = 1
 
-
-        if len(chain) > 0:
-            sp = chain[0]
-        else:
-            sp = -1
-
+        # Alloc engine
         self.id = self.start
         nstart = self.start + 1
 
-        if not self.isLeaf:
-            if sp > 0:
-                div = round((self.end - nstart + 1) / sp)
-                for n in range(sp):
-                    s = nstart + n * div
-                    e = s + div - 1
-                    self.children.append(AllocTree(chain[1:], s, e, self))
-            elif sp == 0:
-                for n in range(self.start, self.end+1):
-                    self.children.append(AllocTree([], n, n+1, self, True))
-        else:
-            self.id += 1
+        # If node is a regular node (dispatcher, link, supervisor, etc)
+        if len(chain) > 1:
+            op = chain[0]
 
-    def in_alloc(self, n:int):
+            # Get segment size
+            div = round((self.end - nstart + 1) / op)
+
+            for n in range(op):
+                s = nstart + n * div # start is a multiplication of div + the start
+                e = s + div - 1      # end is just start + div - 1 (- 1 is because its inclusive, inclusive)
+                self.children.append(AllocTree(chain[1:], s, e, self))
+        # If node is a leaf (bots, apps, healths, etc)
+        elif self.leaf:
+            op = chain[0]
+
+            # If leaf no need to calculate segment size, just fill to the op
+            # if op is 0 then fill entire segment with leaves
+            self.children = [AllocTree([], n, n, self) for n in range(nstart, nstart+op if op>0 else self.end+1)]
+
+    def _in_alloc(self, n: int):
         return self.start <= n <= self.end
 
-    def locate(self, route:int):
+    def locate(self, route: int, verbose = True):
         if route == self.id:
-            print('~ S&R', self.isLeaf, self, self.start, self.end)
+            if verbose: print('~ S&R', self.leaf, self, self.start, self.end)
             return self
-        elif not self.in_alloc(route):
-            print('^ OUT OF RANGE', self.isLeaf, self, self.start, self.end)
+        elif not self._in_alloc(route):
+            if self.root:
+                if verbose: print('X AT ROOT NO AVAIL, RETURNING ROOT')
+                return self
+
+            if verbose: print('↑ OUT OF RANGE', self.leaf, self, self.start, self.end)
             return self.parent.locate(route)
         else:
-            print('v IN RANGE', self.isLeaf, self, self.start, self.end)
+            if verbose: print('↓ IN RANGE', self.leaf, self, self.start, self.end)
             for child in self.children:
-                if child.in_alloc(route):
+                if child._in_alloc(route):
                     return child.locate(route)
+
+            if verbose: print('X N/A, RETURNING', self)
+            return self
+
+    def separator(self):
+        print('-----------------------------------')
+        return self
+
+    def address(self):
+        print(self)
+        return self
+
+    def info(self):
+        yn = lambda a: "Yes" if a else "No"
+        print('Address:', self)
+        print('Start:', self.start)
+        print('End:', self.end)
+        print('Parent:', self.parent)
+        print('Children:', list(map(int, self.children)) if len(self.children) > 0 else 'N/A')
+        print('Is Leaf:', yn(self.leaf))
+        print('Is Root:', yn(self.root))
+        return self
 
     def __str__(self):
         return str(self.id)
@@ -86,9 +113,10 @@ def segment_test(start, end, d):
     print('div   = ' + str(div))
 '''
 
-
 if __name__ == '__main__':
-    AllocTree.SIZE = 10000
-    root = AllocTree([4, 0])
+    AllocTree.SIZE = 100
+    root = AllocTree([1, 2, 10])
 
-    print(root.locate(5).locate(1233).locate(0))
+    for i in range(100):
+        print(i)
+        root.address().locate(i).separator()
