@@ -43,7 +43,7 @@ class AllocTree:
 
             for n in range(op):
                 s = nstart + n * div # start is a multiplication of div + the start
-                e = s + div - 1      # end is just start + div - 1 (- 1 is because its inclusive, inclusive)
+                e = s + div - 1      # end is just start + div - 1 (- 1 is because it's inclusive, inclusive)
                 self.children.append(AllocTree(chain[1:], s, e, self))
         # If node is a leaf (bots, apps, healths, etc)
         elif self.leaf:
@@ -57,22 +57,31 @@ class AllocTree:
         return self.start <= n <= self.end
 
     def locate(self, route: int, verbose = True):
+        # If routing number is equal to your routing number stop and receive
         if route == self.id:
             if verbose: print('~ S&R', self.leaf, self, self.start, self.end)
             return self
+
+        # If routing number is out of your own allocation then send to parent
         elif not self._in_alloc(route):
             if self.root:
+                # Error, outside global segment
                 if verbose: print('X AT ROOT NO AVAIL, RETURNING ROOT')
                 return self
 
             if verbose: print('↑ OUT OF RANGE', self.leaf, self, self.start, self.end)
-            return self.parent.locate(route)
+            return self.parent.locate(route, verbose)
+
+        # If routing number is in your allocation find which child alloc its in and send to respective child
         else:
             if verbose: print('↓ IN RANGE', self.leaf, self, self.start, self.end)
+
+            # TODO figure out all that __getitem__ indexing stuff for better than O(n) performance
             for child in self.children:
                 if child._in_alloc(route):
-                    return child.locate(route)
+                    return child.locate(route, verbose)
 
+            # child not found error
             if verbose: print('X N/A, RETURNING', self)
             return self
 
