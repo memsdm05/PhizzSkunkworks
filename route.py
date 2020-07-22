@@ -1,4 +1,4 @@
-'''
+"""
 Rules of Routing
 1. If routing number is out of your own allocation then send to parent.
 2. If routing number is equal to your routing number stop and receive
@@ -7,10 +7,7 @@ Rules of Routing
 For this example:
 Congruent
 Modulo allocs are thrown away
-'''
-
-import random as r
-
+"""
 
 class AllocTree:
     SIZE = 10_000
@@ -57,6 +54,14 @@ class AllocTree:
         return self.start <= n <= self.end
 
     def locate(self, route: int, verbose = True):
+        """
+        Routes the path to a location via the route number
+
+        :param route: where to route to
+        :param verbose: whether to print route hops or not
+        :return: the final destination
+        """
+
         # If routing number is equal to your routing number stop and receive
         if route == self.id:
             if verbose: print('~ S&R', self.leaf, self, self.start, self.end)
@@ -85,15 +90,45 @@ class AllocTree:
             if verbose: print('X N/A, RETURNING', self)
             return self
 
+    def adopt(self, route):
+        """
+
+        :param route: the address that the leaf would be created
+        :return: the current node
+        """
+        foster = self.locate(route, False)
+        if foster.id != route:
+            foster.children.append(AllocTree([], route, route, foster))
+            print(f'New Child {route} at {foster}')
+        else:
+            print('Child already exists')
+        return self
+
+
     def separator(self):
+        """
+        A separator
+        :return: current node
+        """
+
         print('-----------------------------------')
         return self
 
     def address(self):
+        """
+        Prints address
+        :return: current node
+        """
+
         print(self)
         return self
 
     def info(self):
+        """
+        Prints detailed info about the current node
+        :return: current node
+        """
+
         yn = lambda a: "Yes" if a else "No"
         print('Address:', self)
         print('Start:', self.start)
@@ -126,6 +161,4 @@ if __name__ == '__main__':
     AllocTree.SIZE = 100
     root = AllocTree([1, 2, 10])
 
-    for i in range(100):
-        print(i)
-        root.address().locate(i).separator()
+    root.adopt(19).locate(19)
