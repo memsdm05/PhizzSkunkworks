@@ -158,7 +158,7 @@ def segment_test(start, end, d):
 '''
 
 if __name__ == '__main__':
-    AllocTree.SIZE = 100
-    root = AllocTree([1, 2, 10])
+    AllocTree.SIZE = 100000
+    root = AllocTree([1, 2, 3, 0])
 
-    root.adopt(19).locate(19)
+    root.locate(41).adopt(19).locate(12312).locate(1)
